@@ -15,6 +15,44 @@ header {
   position: relative;
 }
 
+.site-header {
+  display: block;
+}
+
+.site-header-top,
+.site-header-bottom {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.site-logo {
+  font-size: 1.25rem;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.site-logo .site-logo-short {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  /* show short logo on mobile, hide longer text */
+  .site-logo .site-logo-full {
+    display: none;
+  }
+
+  .site-logo .site-logo-short {
+    display: inline-block;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    font-size: 1rem;
+  }
+}
+
 h1,
 h3 {
   margin-top: 0;
@@ -236,6 +274,70 @@ footer {
   main {
     padding: 1rem;
     grid-template-columns: 1fr;
+  }
+
+  /* Mobile header layout: stack and make controls compact */
+  .site-header-top,
+  .site-header-bottom {
+    flex-direction: column;
+    align-items: stretch;
+    text-align: left;
+  }
+
+  .site-header-top {
+    gap: 0.5rem;
+    padding-bottom: 0.5rem;
+  }
+
+  .site-logo {
+    font-size: 1rem;
+    word-break: break-word;
+  }
+
+  .hero-button-wrap {
+    display: flex;
+    justify-content: flex-end;
+  }
+
+  .hero-star-btn {
+    font-size: 0.9rem;
+    padding: 0.5rem 0.75rem;
+    align-self: flex-end;
+  }
+
+  .site-header-bottom {
+    gap: 0.5rem;
+  }
+
+  .theme-switch {
+    order: 2;
+    align-self: flex-end;
+  }
+
+  /* Make search occupy full width on mobile */
+  .header-search {
+    order: 1;
+    width: 100%;
+    display: block;
+  }
+
+  .mainbox {
+    display: flex;
+    width: 100%;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .search_input {
+    flex: 1 1 auto;
+    width: 100%;
+    padding: 0.55rem 0.75rem;
+    border-radius: 999px;
+    font-size: 0.95rem;
+  }
+
+  .iconContainer {
+    padding: 0.45rem;
   }
 
   .card-actions {
