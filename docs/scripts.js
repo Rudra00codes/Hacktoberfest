@@ -55,8 +55,16 @@ fetch('scripts.json')
     showcase.innerHTML = '<p style="text-align: center; color: #f85149;">Error loading scripts. Please check if scripts.json exists.</p>';
   });
 
-document.addEventListener('click', function(e) {
+// start loading when DOM is ready
+if (document.readyState === "loading") {
+  document.addEventListener("DOMContentLoaded", loadScripts);
+} else {
+  loadScripts();
+}
+
+document.addEventListener("click", function (e) {
   const target = e.target;
+  if (!target) return;
 
   if (target.matches('.btn-copy')) {
     const codeBlock = target.closest('.card').querySelector('pre code');
@@ -67,22 +75,88 @@ document.addEventListener('click', function(e) {
     });
   }
 
-  if (target.matches('.btn-demo')) {
-    runDemo(target);
+  // terminal copy toggle
+  if (target.matches(".copy_toggle") || target.closest(".copy_toggle")) {
+    const btn = target.matches(".copy_toggle")
+      ? target
+      : target.closest(".copy_toggle");
+    const index = btn.getAttribute("data-index");
+    const code = scripts[index] && scripts[index].code;
+    if (!code) return;
+
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard
+        .writeText(code)
+        .then(() => {
+          const orig = btn.innerHTML;
+          btn.innerHTML = "✅";
+          setTimeout(() => {
+            btn.innerHTML = orig;
+          }, 1600);
+        })
+        .catch(() => {
+          window.prompt("Copy to clipboard: Ctrl+C, Enter", code);
+        });
+    } else {
+      window.prompt("Copy to clipboard: Ctrl+C, Enter", code);
+    }
+    return;
+  }
+
+  // Legacy copy button (kept for compatibility)
+  if (target.matches(".btn-copy") || target.closest(".btn-copy")) {
+    const btn = target.matches(".btn-copy")
+      ? target
+      : target.closest(".btn-copy");
+    const index = btn.getAttribute("data-index");
+    const code = scripts[index] && scripts[index].code;
+    if (!code) return;
+
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard
+        .writeText(code)
+        .then(() => {
+          const orig = btn.textContent;
+          btn.textContent = "✅ Copied!";
+          setTimeout(() => {
+            btn.textContent = orig;
+          }, 2000);
+        })
+        .catch(() => {
+          window.prompt("Copy to clipboard: Ctrl+C, Enter", code);
+        });
+    } else {
+      window.prompt("Copy to clipboard: Ctrl+C, Enter", code);
+    }
+    return;
   }
 });
 
+// enhance run-demo output accessibility (assumes console-output element exists per card)
 function runDemo(button) {
-  const index = button.getAttribute('data-index');
-  const card = button.closest('.card');
-  const consoleOutput = card.querySelector(`.console-output[data-index="${index}"]`);
-  const outputText = consoleOutput.querySelector('.output-text');
-  
+  const index = button.getAttribute("data-index");
+  const card =
+    button.closest(".card") ||
+    document.querySelector(`.card[data-index="${index}"]`);
+  const consoleOutput = card && card.querySelector(".console-output");
+  if (!consoleOutput) return;
+
+  // accessibility: announce changes to screen readers
+  consoleOutput.setAttribute("role", "status");
+  consoleOutput.setAttribute("aria-live", "polite");
+  consoleOutput.tabIndex = -1;
+  consoleOutput.focus();
+
+  // clear previous content and show
+  const outputText =
+    consoleOutput.querySelector(".output-text") || consoleOutput;
+  outputText.textContent = "";
+  // mark expanded so CSS transitions the box to a larger height
+  consoleOutput.classList.add("expanded");
+  consoleOutput.style.display = "block";
+
   const script = scripts[index];
   if (!script) return;
-
-  consoleOutput.style.display = 'block';
-  outputText.innerHTML = ''; 
 
   let i = 0;
   const speed = 20;
@@ -94,6 +168,9 @@ function runDemo(button) {
       setTimeout(typeWriter, speed);
     } else {
       outputText.innerHTML += '<span class="cursor"></span>';
+      // leave expanded state after typing completed
+      // (keep expanded so the user can read output; remove if you prefer collapse)
+      // consoleOutput.classList.remove('expanded');
     }
   }
   typeWriter();
